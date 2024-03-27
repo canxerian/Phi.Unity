@@ -1,0 +1,30 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel FibonacciOrbitting
+
+#define PI 3.14159265358979323846
+
+RWStructuredBuffer<float3> _Positions;
+RWStructuredBuffer<float2> _UVs;
+int _nPoints;
+
+[numthreads(8,8,1)]
+void FibonacciOrbitting (uint3 id : SV_DispatchThreadID)
+{
+    int index = id;
+    float phi = PI * (3.0 - sqrt(5.0));                   // golden angle in radians
+
+    float y = 1 - (index / (_nPoints - 1.0)) * 2;        // y goes from 1 to -1
+    float r = sqrt(1 - y * y);                          // radius at y
+    float theta = phi * index;                          // golden angle increment
+    float x = cos(theta) * r;
+    float z = sin(theta) * r;
+
+    // float angle = Mathf.Acos(x / z);                 // Angle of the triangle formed by xz
+    float3 position = normalize(float3(x, y, z));
+    float2 uv = float2(x, y);
+    uv.x = (uv.x + 1) * .5f;                            // Convert from -1, 1 to 0, 1
+    uv.y = (uv.y + 1) * .5f;
+    
+	_Positions[id.x + id.y] = position;
+}
+ 
